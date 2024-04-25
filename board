@@ -1,0 +1,143 @@
+import java.awt.Graphics;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.io.IOException;
+import java.awt.image.BufferedImage;
+import javax.imageio.ImageIO;
+import javax.swing.Timer;
+import javax.swing.JPanel;
+import java.awt.Color;
+import java.awt.Font;
+import javax.sound.sampled.*;
+
+public class Board extends JPanel {
+    Timer timer;
+    BufferedImage backgroundImage;
+    Aeroo aero;
+    Enemy enemies[] = new Enemy[3];
+    Clip backgroundMusic;
+
+    public Board() {
+        setSize(1500, 920);
+        loadBackgroundImage();
+        aero = new Aeroo();
+        loadEnemies();
+        gameloop();
+        bindEvents();
+        setFocusable(true);
+        playBackgroundMusic();
+    }
+
+    private void playBackgroundMusic() {
+        try {
+            AudioInputStream audioStream = AudioSystem.getAudioInputStream(Board.class.getResourceAsStream("background.wav"));
+            AudioFormat format = audioStream.getFormat();
+            DataLine.Info info = new DataLine.Info(Clip.class, format);
+            backgroundMusic = (Clip) AudioSystem.getLine(info);
+            backgroundMusic.open(audioStream);
+            backgroundMusic.loop(Clip.LOOP_CONTINUOUSLY);
+        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
+            System.out.println("Error playing background music: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public void gameOver(Graphics pen) {
+        if (aero.outOfScreen()) {
+            pen.setFont(new Font("Times", Font.BOLD, 45));
+            pen.setColor(Color.WHITE);
+            pen.drawString("GAME WIN", 500, 400);
+            timer.stop();
+            stopBackgroundMusic();
+            return;
+        }
+        for (Enemy enemy : enemies) {
+            if (isCollide(enemy)) {
+                pen.setFont(new Font("Times", Font.BOLD, 45));
+                pen.setColor(Color.WHITE);
+                pen.drawString("GAME OVER", 500, 400);
+                timer.stop();
+                stopBackgroundMusic();
+            }
+        }
+    }
+
+    private boolean isCollide(Enemy enemy) {
+        int xDistance = Math.abs(aero.x - enemy.x);
+        int yDistance = Math.abs(aero.y - enemy.y);
+        int maxH = Math.max(aero.h, enemy.h);
+        int maxW = Math.max(aero.w, enemy.w);
+        return xDistance <= maxW - 150 && yDistance <= maxH - 250;
+    }
+
+    private void bindEvents() {
+        addKeyListener(new KeyListener() {
+            public void keyReleased(KeyEvent e) {
+                aero.speed = 0; // This will set speed to 0 when a key is released
+            }
+
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+                    aero.speed = 10;
+                } else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+                    aero.speed = -10;
+                }
+            }
+
+            public void keyTyped(KeyEvent e) {
+                // You can implement this if needed
+            }
+        });
+    }
+
+    private void loadEnemies() {
+        int x = 400;
+        int gap = 445;
+        int speed = 5;
+
+        for (int i = 0; i < enemies.length; i++) {
+            enemies[i] = new Enemy(x, speed);
+            x = x + gap;
+            speed = speed + 2;
+        }
+    }
+
+    private void gameloop() {
+        timer = new Timer(50, (e) -> repaint());
+        timer.start();
+    }
+
+    private void loadBackgroundImage() {
+        try {
+            backgroundImage = ImageIO.read(Board.class.getResource("back.jpg"));
+        } catch (IOException e) {
+            System.out.println("background img not found");
+            System.exit(1);
+            e.printStackTrace();
+        }
+    }
+
+    private void printEnemies(Graphics pen) {
+        for (Enemy enemy : enemies) {
+            enemy.draw(pen);
+            enemy.move();
+        }
+    }
+
+    @Override
+    public void paintComponent(Graphics pen) {
+        super.paintComponent(pen); // cleanup
+        // super----parent
+        pen.drawImage(backgroundImage, 0, 0, 1500, 920, null);
+        aero.draw(pen);
+        aero.move();
+        printEnemies(pen);
+        gameOver(pen);
+    }
+
+    private void stopBackgroundMusic() {
+        if (backgroundMusic != null && backgroundMusic.isRunning()) {
+            backgroundMusic.stop();
+        }
+    }
+}
