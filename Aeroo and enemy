@@ -1,0 +1,39 @@
+//for player
+import javax.swing.ImageIcon;
+public class Aeroo extends Game{
+  
+     public Aeroo(){
+        w=300;
+        h=300;
+        x=40;
+        y=270;
+        image=new ImageIcon(Aeroo.class.getResource("imgg.gif"));
+     }
+     public void move(){
+        x=x+speed;
+     }
+     public boolean outOfScreen(){
+      return x>1500;
+     }
+     }
+//for enemy creation
+import javax.swing.ImageIcon;
+
+public class Enemy extends Game {
+   
+
+public Enemy (int x,int speed){
+    y=30;
+    this.speed=speed;
+    this.x=x;
+    w=200;
+    h=200;
+    image =new ImageIcon(Enemy.class.getResource("tenoor.gif"));}
+public void move(){
+    if(y>900){
+         y=0;
+    }
+    y=y+speed;
+}}
+
+
