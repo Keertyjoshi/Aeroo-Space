@@ -1,0 +1,34 @@
+import javax.swing.JFrame;
+
+
+public class GameFrame extends JFrame {
+    public GameFrame(){//constructor being created here
+        Board board=new Board();
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);// used so that on exit it automatically gets deleted
+        setSize(1500,920);//for setting up the size of the frame
+        setResizable(false);//so that resizing is not done 
+        setTitle("MY GAME");//GIVING TITLE
+        setLocationRelativeTo(null);//so that we can see game in centre 
+        add(board);
+        setVisible(true);//this is being used for that purpose so thata the frame is visible
+    }
+public static void main(String arr[]) {
+	new GameFrame();
+
+}
+    }
+import javax.swing.ImageIcon;
+import java.awt.Graphics;
+public abstract class Game  {
+   public int speed;
+   public int x;
+   public int y;
+   public int w;
+   public int h;
+    ImageIcon image; 
+
+    public void draw(Graphics pen){
+        pen.drawImage(image.getImage(),x,y,w,h,null);
+             }
+         
+}
